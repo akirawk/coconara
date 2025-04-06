@@ -1,0 +1,66 @@
+{
+  "Version": 1,
+  "WorkspaceRootPath": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\",
+  "Documents": [
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\private\\coconara\\zu ka4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\private\\coconara\\zu ka4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    }
+  ],
+  "DocumentGroupContainers": [
+    {
+      "Orientation": 0,
+      "VerticalTabListWidth": 256,
+      "DocumentGroups": [
+        {
+          "DockedWidth": 200,
+          "SelectedChildIndex": 3,
+          "Children": [
+            {
+              "$type": "Bookmark",
+              "Name": "ST:128:0:{13b12e3e-c1b4-4539-9371-4fe9a0d523fc}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:129:0:{116d2292-e37d-41cd-a077-ebacac4c8cc4}"
+            },
+            {
+              "$type": "Bookmark",
+              "Name": "ST:0:0:{e5c86464-96be-4d7c-9a8b-abcb3bbf5f92}"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 0,
+              "Title": "CheckValidSoftware.cs",
+              "DocumentMoniker": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\CheckValidSoftware.cs",
+              "RelativeDocumentMoniker": "CheckValidSoftware.cs",
+              "ToolTip": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\CheckValidSoftware.cs",
+              "RelativeToolTip": "CheckValidSoftware.cs",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABoAAAA9AAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-26T14:17:17.043Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 1,
+              "Title": "Form1.cs",
+              "DocumentMoniker": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\Form1.cs",
+              "RelativeDocumentMoniker": "Form1.cs",
+              "ToolTip": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\Form1.cs",
+              "RelativeToolTip": "Form1.cs",
+              "ViewState": "AgIAABkAAAAAAAAAAAAmwD4AAAAlAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-03-26T13:43:02.233Z",
+              "EditorCaption": ""
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

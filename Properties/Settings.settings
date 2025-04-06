@@ -1,0 +1,15 @@
+﻿<?xml version='1.0' encoding='utf-8'?>
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="RedundantFileSearch.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="キー1" Type="System.String" Scope="User">
+      <Value Profile="(Default)">d0ETsyCMrCnt6nEHaRLV5cQpUuyeSXHQAFgSVVvR1CaevVGA</Value>
+    </Setting>
+    <Setting Name="キー3" Type="System.Double" Scope="User">
+      <Value Profile="(Default)">0</Value>
+    </Setting>
+    <Setting Name="キー2" Type="System.String" Scope="User">
+      <Value Profile="(Default)">pP2TsXK7blegWk6M4S6Z5secBTGtJEccSbYKBvxSH5w=</Value>
+    </Setting>
+  </Settings>
+</SettingsFile>
