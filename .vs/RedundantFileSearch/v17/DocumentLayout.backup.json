@@ -1,14 +1,25 @@
 {
   "Version": 1,
-  "WorkspaceRootPath": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\",
+  "WorkspaceRootPath": "D:\\GitRepos\\coconara\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\private\\coconara\\zu ka4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\gitrepos\\coconara\\parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
-      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\private\\coconara\\zu ka4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|D:\\GitRepos\\coconara\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\gitrepos\\coconara\\program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:program.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{A2FE74E1-B743-11D0-AE1A-00A0C90FFFC3}|\u003CMiscFiles\u003E|C:\\Users\\ku_ak\\AppData\\Local\\Temp\\.vsdbgsrc\\59bfff880852701cf75231f3d8410c10dbbca857e2af8bb46abef848d2805aae\\Component.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\gitrepos\\coconara\\checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     }
   ],
   "DocumentGroupContainers": [
@@ -35,12 +46,49 @@
             {
               "$type": "Document",
               "DocumentIndex": 0,
+              "Title": "ParseInput.cs",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\ParseInput.cs",
+              "RelativeDocumentMoniker": "ParseInput.cs",
+              "ToolTip": "D:\\GitRepos\\coconara\\ParseInput.cs*",
+              "RelativeToolTip": "ParseInput.cs*",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAYAAAAAAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-15T16:21:38.442Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
+              "Title": "Component.cs",
+              "DocumentMoniker": "C:\\Users\\ku_ak\\AppData\\Local\\Temp\\.vsdbgsrc\\59bfff880852701cf75231f3d8410c10dbbca857e2af8bb46abef848d2805aae\\Component.cs",
+              "ToolTip": "C:\\Users\\ku_ak\\AppData\\Local\\Temp\\.vsdbgsrc\\59bfff880852701cf75231f3d8410c10dbbca857e2af8bb46abef848d2805aae\\Component.cs [\u8AAD\u307F\u53D6\u308A\u5C02\u7528]",
+              "ViewState": "AgIAAEwAAAAAAAAAAAAmwFwAAAACAAAAAQAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-15T10:03:10.506Z",
+              "EditorCaption": " [\u8AAD\u307F\u53D6\u308A\u5C02\u7528]"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 2,
+              "Title": "Program.cs",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\Program.cs",
+              "RelativeDocumentMoniker": "Program.cs",
+              "ToolTip": "D:\\GitRepos\\coconara\\Program.cs",
+              "RelativeToolTip": "Program.cs",
+              "ViewState": "AgIAAAAAAAAAAAAAAAAAAAwAAAAIAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-15T09:59:28.35Z",
+              "EditorCaption": ""
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 4,
               "Title": "CheckValidSoftware.cs",
-              "DocumentMoniker": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\CheckValidSoftware.cs",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\CheckValidSoftware.cs",
               "RelativeDocumentMoniker": "CheckValidSoftware.cs",
-              "ToolTip": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\CheckValidSoftware.cs",
+              "ToolTip": "D:\\GitRepos\\coconara\\CheckValidSoftware.cs",
               "RelativeToolTip": "CheckValidSoftware.cs",
-              "ViewState": "AgIAAAMAAAAAAAAAAAAAABoAAAA9AAAAAAAAAA==",
+              "ViewState": "AgIAAAMAAAAAAAAAAAAAABQAAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-26T14:17:17.043Z",
               "EditorCaption": ""
@@ -49,11 +97,11 @@
               "$type": "Document",
               "DocumentIndex": 1,
               "Title": "Form1.cs",
-              "DocumentMoniker": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\Form1.cs",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
-              "ToolTip": "D:\\PRIVATE\\Coconara\\ZU KA4_aoki_sama\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\\u4F9B\u7D66\u7269\u4E00\u5F0F\\3_\u30BD\u30FC\u30B9\u30B3\u30FC\u30C9\\Form1.cs",
+              "ToolTip": "D:\\GitRepos\\coconara\\Form1.cs",
               "RelativeToolTip": "Form1.cs",
-              "ViewState": "AgIAABkAAAAAAAAAAAAmwD4AAAAlAAAAAAAAAA==",
+              "ViewState": "AgIAAHYCAAAAAAAAAAAYwIsCAAAQAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-26T13:43:02.233Z",
               "EditorCaption": ""

@@ -11,9 +11,16 @@ namespace RedundantFileSearch
         [STAThread]
         static void Main()
         {
-            Application.EnableVisualStyles();
-            Application.SetCompatibleTextRenderingDefault(false);
-            Application.Run(new Form1());
+            try
+            {
+                Application.EnableVisualStyles();
+                Application.SetCompatibleTextRenderingDefault(false);
+                Application.Run(new Form1());
+            }
+            catch (Exception ex)
+            {
+                MessageBox.Show("起動時にエラーが発生しました: " + ex.Message, "例外", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
     }
 }

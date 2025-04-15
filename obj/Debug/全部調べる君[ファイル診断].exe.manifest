@@ -426,14 +426,14 @@
     </dependentAssembly>
   </dependency>
   <dependency>
-    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="全部調べる君[ファイル診断].exe" size="64000">
+    <dependentAssembly dependencyType="install" allowDelayedBinding="true" codebase="全部調べる君[ファイル診断].exe" size="62976">
       <assemblyIdentity name="全部調べる君[ファイル診断]" version="1.0.0.0" language="neutral" processorArchitecture="msil" />
       <hash>
         <dsig:Transforms>
           <dsig:Transform Algorithm="urn:schemas-microsoft-com:HashTransforms.Identity" />
         </dsig:Transforms>
         <dsig:DigestMethod Algorithm="http://www.w3.org/2000/09/xmldsig#sha256" />
-        <dsig:DigestValue>lCog5oVhSJ2nyibOoi/WZdhd/YVLo+GiuSFnEeNN/rI=</dsig:DigestValue>
+        <dsig:DigestValue>jeUvHKYvO8MGHazMV/kyqgQ5vXQLlY3N+Lo/m/wu6Ik=</dsig:DigestValue>
       </hash>
     </dependentAssembly>
   </dependency>
