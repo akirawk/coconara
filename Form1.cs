@@ -377,19 +377,16 @@ namespace RedundantFileSearch
             updateRemainTime(searchFiles.Count);
 
             /// 検索キーワード取得
-            var keyList = new List<string[]>
-            {
-                new string[] { txtName.Text }
-            };
+            /// 検索キーワード取得
+            var keyList = new List<string[]>();
             if (chxNameCsv.Checked)
             {
                 keyList.Clear();
-
                 if (Path.GetExtension(txtName.Text) != ".csv") return;
                 string l;
                 using (var sr = new StreamReader(txtName.Text))
                 {
-                    while(sr.EndOfStream == false)
+                    while (sr.EndOfStream == false)
                     {
                         l = sr.ReadLine();
                         if (l == null) continue;
@@ -397,9 +394,13 @@ namespace RedundantFileSearch
                     }
                 }
             }
+            else
+            {
+                // 直接入力の場合も Tokenize と ToRPN を適用
+                keyList.Add(ParseInput.ToRPN(ParseInput.Tokenize(txtName.Text)).ToArray());
+            }
             keyword = keyList.ToArray();
             if (keyword == null || keyword.Length == 0) return;
-
 
             string outputPath = null;
             var tmpFilePath = Path.GetTempPath() + TMP_FILE_NAME;

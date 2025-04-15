@@ -17,12 +17,15 @@ namespace RedundantFileSearch
     {
         public static List<string> Tokenize(string expr)
         {
+            expr = Regex.Replace(expr, "\\s*,\\s*", ",");
+            expr = Regex.Replace(expr, ",", " , ");
             var tokens = new List<string>();
-            var matches = Regex.Matches(expr, "\\(|\\)|\\+|,|-[^,\\+\\(\\)\\s]+|[^,\\+\\(\\)\\s]+");
+            var matches = Regex.Matches(expr, "\\(|\\)|\\+|,|-\\S+|\\S+");
             foreach (Match m in matches)
             {
                 tokens.Add(m.Value);
             }
+            Console.WriteLine("Tokens: " + string.Join(", ", tokens)); // デバッグ用
             return tokens;
         }
 
