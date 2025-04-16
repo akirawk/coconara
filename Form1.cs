@@ -245,6 +245,15 @@ namespace RedundantFileSearch
         {
             var ret = FolderSelect("検索結果出力フォルダを指定してください。");
             if (ret == null) return;
+
+            // 書き込み権限をチェック
+            if (!IsDirectoryWritable(ret))
+            {
+                MessageBox.Show("このフォルダには書き込み権限がありません。別のフォルダを選んでください。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+
             txtOutputPath.Text = ret;
         }
 
@@ -322,11 +331,64 @@ namespace RedundantFileSearch
                 Text = baseTitleText + " [検索中] 残り時間" + (totalSec / 60).ToString("00") + ":" + (totalSec % 60).ToString("00");
             }));
         }
+        // 書き込み権限チェック用のヘルパーメソッド
+        private bool IsDirectoryWritable(string folderPath)
+        {
+            try
+            {
+                // フォルダが存在するか確認
+                if (!Directory.Exists(folderPath))
+                {
+                    return false;
+                }
 
+                // テストファイルで書き込み権限をチェック
+                string testFile = Path.Combine(folderPath, "test_write_permissions.tmp");
+                using (FileStream fs = File.Create(testFile))
+                {
+                    fs.WriteByte(0); // ダミーデータ
+                }
+                File.Delete(testFile); // テストファイルを削除
+                return true;
+            }
+            catch (UnauthorizedAccessException)
+            {
+                return false;
+            }
+            catch (IOException)
+            {
+                return false;
+            }
+            catch (Exception ex)
+            {
+                // その他のエラー（例: ネットワーク切断）もログに記録
+                WriteErrorLog(ex.Message, ex.StackTrace);
+                return false;
+            }
+        }
         void DoSearch()
         {
-            if (lbxPath.Items.Count == 0) return;
-            if (string.IsNullOrEmpty(txtOutputPath.Text)) return;
+            if (lbxPath.Items.Count == 0)
+            {
+                MessageBox.Show("検索フォルダを指定してください。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            if (string.IsNullOrEmpty(txtOutputPath.Text))
+            {
+                MessageBox.Show("出力フォルダを指定してください。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                return;
+            }
+            // 検索開始時に書き込み権限を再チェック
+            if (!IsDirectoryWritable(txtOutputPath.Text))
+            {
+                MessageBox.Show("出力フォルダに書き込み権限がありません。別のフォルダを指定してください。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSearch = false;
+                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
+                return;
+            }
             if (chxNameCsv.Checked)
             {
                 if (File.Exists(txtName.Text) == false) return;
