@@ -391,11 +391,21 @@ namespace RedundantFileSearch
             }
             if (chxNameCsv.Checked)
             {
-                if (File.Exists(txtName.Text) == false) return;
+                if (File.Exists(txtName.Text) == false)
+                {
+                    MessageBox.Show("CSV ファイルが存在しません。",
+                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
             }
             else
             {
-                if (string.IsNullOrEmpty(txtName.Text)) return;
+                if (string.IsNullOrEmpty(txtName.Text))
+                {
+                    MessageBox.Show("検索キーワードを入力してください。",
+                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
             }
             BeginInvoke(new Action(() =>
             {
@@ -408,6 +418,7 @@ namespace RedundantFileSearch
 
             /// 検索ファイルリスト生成
             var searchFiles = new List<string>();
+            try
             {
                 var minDate = dtpMin.Value.Date;
                 var maxDate = dtpMax.Value.Date;
@@ -428,39 +439,103 @@ namespace RedundantFileSearch
                         }
 
                         if (reg.IsMatch(item) == false) return false;
-                        var t = File.GetLastWriteTime(item).Date;
-                        return t >= minDate && t <= maxDate;
+
+                        try
+                        {
+                            var t = File.GetLastWriteTime(item).Date;
+                            return t >= minDate && t <= maxDate;
+                        }
+                        catch (IOException ex)
+                        {
+                            Console.WriteLine($"File access error for {item}: {ex.Message}");
+                            WriteErrorLog($"File access error for {item}: {ex.Message}", ex.StackTrace);
+                            return false;
+                        }
                     });
-                    AddFiles(path, files);
+                    try
+                    {
+                        AddFiles(path, files);
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"AddFiles error for {path}: {ex.Message}");
+                        WriteErrorLog($"AddFiles error for {path}: {ex.Message}", ex.StackTrace);
+                        continue;
+                    }
                     searchFiles.AddRange(files.Where(updateCheckFunc));
                 }
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Search files generation error: {ex.Message}");
+                WriteErrorLog($"Search files generation error: {ex.Message}", ex.StackTrace);
+                MessageBox.Show("検索ファイルの生成中にエラーが発生しました。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSearch = false;
+                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
+                return;
             }
 
             updateRemainTime(searchFiles.Count);
 
             /// 検索キーワード取得
             var keyList = new List<string[]>();
-            if (chxNameCsv.Checked)
+            try
             {
-                keyList.Clear();
-                if (Path.GetExtension(txtName.Text) != ".csv") return;
-                string l;
-                using (var sr = new StreamReader(txtName.Text))
+                if (chxNameCsv.Checked)
                 {
-                    while (!sr.EndOfStream)
+                    keyList.Clear();
+                    if (Path.GetExtension(txtName.Text) != ".csv")
                     {
-                        l = sr.ReadLine();
-                        if (string.IsNullOrEmpty(l)) continue;
-                        keyList.Add(ParseInput.ToRPN(l).ToArray()); // 修正：string を直接渡す
+                        MessageBox.Show("CSV ファイルを選択してください。",
+                                        "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                        return;
+                    }
+                    string l;
+                    using (var sr = new StreamReader(txtName.Text))
+                    {
+                        while (!sr.EndOfStream)
+                        {
+                            l = sr.ReadLine();
+                            if (string.IsNullOrEmpty(l)) continue;
+                            // ログ追加：入力、トークン、RPN を表示
+                            var tokens = ParseInput.Tokenize(l);
+                            var rpn = ParseInput.ToRPN(l);
+                            Console.WriteLine($"CSV Input: {l}");
+                            Console.WriteLine($"Tokens: {string.Join(", ", tokens)}");
+                            Console.WriteLine($"RPN: {string.Join(", ", rpn)}");
+                            keyList.Add(rpn.ToArray());
+                        }
                     }
                 }
+                else
+                {
+                    // ログ追加：入力、トークン、RPN を表示
+                    var tokens = ParseInput.Tokenize(txtName.Text);
+                    var rpn = ParseInput.ToRPN(txtName.Text);
+                    Console.WriteLine($"Input: {txtName.Text}");
+                    Console.WriteLine($"Tokens: {string.Join(", ", tokens)}");
+                    Console.WriteLine($"RPN: {string.Join(", ", rpn)}");
+                    keyList.Add(rpn.ToArray());
+                }
+                keyword = keyList.ToArray();
+                if (keyword == null || keyword.Length == 0)
+                {
+                    MessageBox.Show("有効な検索キーワードがありません。",
+                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    return;
+                }
             }
-            else
+            catch (IOException ex)
             {
-                keyList.Add(ParseInput.ToRPN(txtName.Text).ToArray()); // 修正：string を直接渡す
+                Console.WriteLine($"Keyword processing error: {ex.Message}");
+                WriteErrorLog($"Keyword processing error: {ex.Message}", ex.StackTrace);
+                MessageBox.Show("キーワードの処理中にエラーが発生しました。",
+                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                isSearch = false;
+                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
+                return;
             }
-            keyword = keyList.ToArray();
-            if (keyword == null || keyword.Length == 0) return;
 
             string outputPath = null;
             var tmpFilePath = Path.GetTempPath() + TMP_FILE_NAME;
@@ -472,6 +547,7 @@ namespace RedundantFileSearch
 
                 foreach (var file in searchFiles)
                 {
+                    Console.WriteLine($"Processing file: {file}");
                     bool isHit = false;
 
                     try
@@ -481,9 +557,27 @@ namespace RedundantFileSearch
                         // 評価する
                         isHit = ParseInput.EvaluateRpnForFile(file, content, new List<string>(keyString));
                     }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"File read error for {file}: {ex.Message}");
+                        WriteErrorLog($"File read error for {file}: {ex.Message}", ex.StackTrace);
+                        // ポップアップ通知
+                        DialogResult result = MessageBox.Show($"ファイル '{file}' が他のアプリで開かれています。閉じて再試行しますか？",
+                                                             "ファイルアクセスエラー",
+                                                             MessageBoxButtons.RetryCancel,
+                                                             MessageBoxIcon.Warning);
+                        if (result == DialogResult.Cancel)
+                        {
+                            isSearch = false;
+                            BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
+                            return;
+                        }
+                        isHit = false;
+                    }
                     catch (Exception ex)
                     {
-                        WriteErrorLog(ex.Message, ex.StackTrace);
+                        Console.WriteLine($"Search error for {file}: {ex.Message}");
+                        WriteErrorLog($"Search error for {file}: {ex.Message}", ex.StackTrace);
                         isHit = false;
                     }
 
@@ -495,21 +589,49 @@ namespace RedundantFileSearch
 
                 if (reserveForm == null || (reserveForm != null && reserveForm.chkOutCsv.Checked))
                 {
-                    outputPath = OutputCsv(tmpResultFiles);
-                    int hitCount = tmpResultFiles.Count;
-                    MessageBox.Show($"{hitCount} 件の検索結果を保存しました。",
-                        "保存完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    try
+                    {
+                        outputPath = OutputCsv(tmpResultFiles);
+                        int hitCount = tmpResultFiles.Count;
+                        MessageBox.Show($"{hitCount} 件の検索結果を保存しました。",
+                            "保存完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
+                    }
+                    catch (IOException ex)
+                    {
+                        Console.WriteLine($"CSV output error: {ex.Message}");
+                        WriteErrorLog($"CSV output error: {ex.Message}", ex.StackTrace);
+                        MessageBox.Show("検索結果の保存中にエラーが発生しました。",
+                                        "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
             }
 
             if (reserveForm != null && (reserveForm.chkMailInfo.Checked || reserveForm.chkMailCsv.Checked))
             {
-                reserveForm.SendMail(Form1.MAIL_SUBJECT_HEADER + "検索完了通知", "全部調べる君での検索が完了しました。", reserveForm.chkMailCsv.Checked ? outputPath : null);
+                try
+                {
+                    reserveForm.SendMail(Form1.MAIL_SUBJECT_HEADER + "検索完了通知", "全部調べる君での検索が完了しました。", reserveForm.chkMailCsv.Checked ? outputPath : null);
+                }
+                catch (Exception ex)
+                {
+                    Console.WriteLine($"Mail send error: {ex.Message}");
+                    WriteErrorLog($"Mail send error: {ex.Message}", ex.StackTrace);
+                    MessageBox.Show("メール送信中にエラーが発生しました。",
+                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                }
             }
 
             searchPos = 0;
             tmpResultFiles.Clear();
-            File.Delete(tmpFilePath);
+            try
+            {
+                if (File.Exists(tmpFilePath)) File.Delete(tmpFilePath);
+            }
+            catch (IOException ex)
+            {
+                Console.WriteLine($"Temp file delete error: {ex.Message}");
+                WriteErrorLog($"Temp file delete error: {ex.Message}", ex.StackTrace);
+            }
             isSearch = false;
             BeginInvoke(new Action(() =>
             {
@@ -1083,18 +1205,31 @@ namespace RedundantFileSearch
             reserveForm.Show(this);
         }
 
-        private void WriteErrorLog(string msg, string trace)
+        private void WriteErrorLog(string message, string stackTrace)
         {
-            if (File.Exists(ERROR_LOG))
+            try
             {
-                var f = new FileInfo(ERROR_LOG);
-                if (f.Length >= 10 * 1024 * 1024) File.Delete(f.FullName);
+                string logFile = "errorLog.txt"; // ログファイル名（必要ならパス変更）
+                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {message}\n{stackTrace}\n\n";
+                // ファイルがロックされてても再試行
+                for (int i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        File.AppendAllText(logFile, logEntry);
+                        return;
+                    }
+                    catch (IOException)
+                    {
+                        System.Threading.Thread.Sleep(100); // 100ms 待機
+                    }
+                }
+                // 失敗したらコンソールに出力
+                Console.WriteLine($"Failed to write to log: {message}");
             }
-
-            using (var sw = new StreamWriter(ERROR_LOG, true))
+            catch (Exception ex)
             {
-                sw.WriteLine(msg);
-                sw.WriteLine(trace);
+                Console.WriteLine($"Error writing log: {ex.Message}");
             }
         }
     }

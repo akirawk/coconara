@@ -8,11 +8,11 @@ namespace RedundantFileSearch
 {
     public static class ParseInput
     {
-        // トークン化（スペース無視、括弧・否定対応）
+        // トークン化（スペース無視、&&, ||, !!, 括弧対応）
         public static List<string> Tokenize(string expr)
         {
             var tokens = new List<string>();
-            var matches = Regex.Matches(expr, @"-?\S+|[+,\(\)]");
+            var matches = Regex.Matches(expr, @"\w+|&&|\|\||!!|[\(\)]");
             foreach (Match m in matches)
             {
                 tokens.Add(m.Value);
@@ -20,19 +20,18 @@ namespace RedundantFileSearch
             return tokens;
         }
 
-        // RPN 変換（括弧優先、左から順、否定対応）
+        // RPN 変換（左から順評価、括弧・否定対応）
         public static List<string> ToRPN(string expr)
         {
             List<string> tokens = Tokenize(expr);
             Stack<string> opStack = new Stack<string>();
             List<string> rpn = new List<string>();
 
-            for (int i = 0; i < tokens.Count; i++)
+            foreach (var token in tokens)
             {
-                string token = tokens[i];
-                if (token == "+" || token == ",")
+                if (token == "&&" || token == "||" || token == "!!")
                 {
-                    // 同優先順位で左から順
+                    // 左から順評価：演算子は括弧内を優先
                     while (opStack.Count > 0 && opStack.Peek() != "(")
                     {
                         rpn.Add(opStack.Pop());
@@ -53,36 +52,14 @@ namespace RedundantFileSearch
                     {
                         opStack.Pop(); // 括弧を削除
                     }
-                    // 否定条件が後ろ（例: (大阪+名古屋)-沖縄）
-                    if (i + 1 < tokens.Count && tokens[i + 1].StartsWith("-"))
-                    {
-                        string exclude = tokens[i + 1];
-                        i++; // 否定をスキップ
-                        if (rpn.Count > 0)
-                        {
-                            string last = rpn[rpn.Count - 1];
-                            rpn.RemoveAt(rpn.Count - 1);
-                            rpn.Add($"({last} {exclude})");
-                        }
-                    }
-                }
-                else if (token.StartsWith("-") && i > 0 &&
-                         tokens[i - 1] != "+" && tokens[i - 1] != "," && tokens[i - 1] != "(")
-                {
-                    // 単独否定（例: 名古屋 -大阪）
-                    if (rpn.Count > 0)
-                    {
-                        string prevKeyword = rpn[rpn.Count - 1];
-                        rpn.RemoveAt(rpn.Count - 1);
-                        rpn.Add($"({prevKeyword} {token})");
-                    }
                 }
                 else
                 {
-                    rpn.Add(token);
+                    rpn.Add(token); // キーワード
                 }
             }
 
+            // 残りの演算子をポップ
             while (opStack.Count > 0)
             {
                 string op = opStack.Pop();
@@ -108,50 +85,25 @@ namespace RedundantFileSearch
             Stack<bool> stack = new Stack<bool>();
             foreach (var token in rpn)
             {
-                if (token == "+")
+                if (token == "&&")
                 {
                     if (stack.Count < 2) return false;
                     bool b = stack.Pop();
                     bool a = stack.Pop();
                     stack.Push(a && b);
                 }
-                else if (token == ",")
+                else if (token == "||")
                 {
                     if (stack.Count < 2) return false;
                     bool b = stack.Pop();
                     bool a = stack.Pop();
                     stack.Push(a || b);
                 }
-                else if (token.StartsWith("(") && token.EndsWith(")"))
+                else if (token == "!!")
                 {
-                    // 否定グループ（例: "(大阪+名古屋 -沖縄)"）
-                    string inner = token.Substring(1, token.Length - 2);
-                    var subTokens = Tokenize(inner);
-                    if (subTokens.Count >= 2 && subTokens[subTokens.Count - 1].StartsWith("-"))
-                    {
-                        // 最後のトークンが否定
-                        string exclude = subTokens[subTokens.Count - 1];
-                        subTokens.RemoveAt(subTokens.Count - 1);
-                        bool groupResult;
-                        if (subTokens.Count == 1)
-                        {
-                            groupResult = Match(subTokens[0]);
-                        }
-                        else
-                        {
-                            // サブグループを評価
-                            List<string> subRpn = ToRPN(string.Join(" ", subTokens));
-                            groupResult = EvaluateRpnForFile(filePath, fileContentLines, subRpn);
-                        }
-                        bool excludeResult = Match(exclude);
-                        stack.Push(groupResult && excludeResult);
-                    }
-                    else
-                    {
-                        // 通常の括弧グループ
-                        List<string> subRpn = ToRPN(inner);
-                        stack.Push(EvaluateRpnForFile(filePath, fileContentLines, subRpn));
-                    }
+                    if (stack.Count < 1) return false;
+                    bool a = stack.Pop();
+                    stack.Push(!a);
                 }
                 else
                 {
