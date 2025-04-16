@@ -439,7 +439,6 @@ namespace RedundantFileSearch
             updateRemainTime(searchFiles.Count);
 
             /// 検索キーワード取得
-            /// 検索キーワード取得
             var keyList = new List<string[]>();
             if (chxNameCsv.Checked)
             {
@@ -448,18 +447,17 @@ namespace RedundantFileSearch
                 string l;
                 using (var sr = new StreamReader(txtName.Text))
                 {
-                    while (sr.EndOfStream == false)
+                    while (!sr.EndOfStream)
                     {
                         l = sr.ReadLine();
-                        if (l == null) continue;
-                        keyList.Add(ParseInput.ToRPN(ParseInput.Tokenize(l)).ToArray());
+                        if (string.IsNullOrEmpty(l)) continue;
+                        keyList.Add(ParseInput.ToRPN(l).ToArray()); // 修正：string を直接渡す
                     }
                 }
             }
             else
             {
-                // 直接入力の場合も Tokenize と ToRPN を適用
-                keyList.Add(ParseInput.ToRPN(ParseInput.Tokenize(txtName.Text)).ToArray());
+                keyList.Add(ParseInput.ToRPN(txtName.Text).ToArray()); // 修正：string を直接渡す
             }
             keyword = keyList.ToArray();
             if (keyword == null || keyword.Length == 0) return;
@@ -478,11 +476,10 @@ namespace RedundantFileSearch
 
                     try
                     {
-                        // ファイル中身を読む（拡張子によって簡略化OK）
+                        // ファイル中身を読む
                         string[] content = File.Exists(file) ? File.ReadAllLines(file) : Array.Empty<string>();
-
-                        // 評価する（keyString は RPN トークン配列）
-                        isHit = EvaluateRpnForFile(file, content, new List<string>(keyString));
+                        // 評価する
+                        isHit = ParseInput.EvaluateRpnForFile(file, content, new List<string>(keyString));
                     }
                     catch (Exception ex)
                     {
@@ -519,7 +516,6 @@ namespace RedundantFileSearch
                 Text = baseTitleText + " [検索終了]";
             }));
         }
-
         void OutputTmpFile(Dictionary<string, int> tmpResults, int pos, StreamWriter sw)
         {
             sw.WriteLine(txtName.Text);
