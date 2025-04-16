@@ -12,35 +12,38 @@ namespace RedundantFileSearch
         public static List<string> Tokenize(string expr)
         {
             var tokens = new List<string>();
-            var matches = Regex.Matches(expr, @"\w+|&&|\|\||!!|[\(\)]");
+            // !が付いたキーワードを1つのトークンとして認識
+            var matches = Regex.Matches(expr, @"(!\w+)|(\w+)|(&&|\|\|)");
             foreach (Match m in matches)
             {
                 tokens.Add(m.Value);
             }
             return tokens;
         }
-
         // RPN 変換（左から順評価、括弧・否定対応）
         public static List<string> ToRPN(string expr)
         {
             List<string> tokens = Tokenize(expr);
             Stack<string> opStack = new Stack<string>();
             List<string> rpn = new List<string>();
+            bool expectOperand = true; // 演算子/括弧の後にオペランドを期待
 
             foreach (var token in tokens)
             {
-                if (token == "&&" || token == "||" || token == "!!")
+                if (token == "&&" || token == "||")
                 {
-                    // 左から順評価：演算子は括弧内を優先
+                    // 演算子はスタックに積む
                     while (opStack.Count > 0 && opStack.Peek() != "(")
                     {
                         rpn.Add(opStack.Pop());
                     }
                     opStack.Push(token);
+                    expectOperand = true;
                 }
                 else if (token == "(")
                 {
                     opStack.Push(token);
+                    expectOperand = true;
                 }
                 else if (token == ")")
                 {
@@ -52,10 +55,22 @@ namespace RedundantFileSearch
                     {
                         opStack.Pop(); // 括弧を削除
                     }
+                    expectOperand = false;
                 }
                 else
                 {
-                    rpn.Add(token); // キーワード
+                    // キーワード（通常または!付き）
+                    rpn.Add(token);
+                    if (!expectOperand && rpn.Count > 1)
+                    {
+                        // キーワードが連続 → 暗黙の AND
+                        while (opStack.Count > 0 && opStack.Peek() != "(")
+                        {
+                            rpn.Add(opStack.Pop());
+                        }
+                        opStack.Push("&&");
+                    }
+                    expectOperand = false;
                 }
             }
 
@@ -68,13 +83,12 @@ namespace RedundantFileSearch
 
             return rpn;
         }
-
         // ファイル評価
         public static bool EvaluateRpnForFile(string filePath, string[] fileContentLines, List<string> rpn)
         {
             bool Match(string keyword)
             {
-                bool isExclude = keyword.StartsWith("-");
+                bool isExclude = keyword.StartsWith("!");
                 if (isExclude) keyword = keyword.Substring(1);
                 string fileName = Path.GetFileName(filePath);
                 bool matched = fileName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
@@ -99,14 +113,9 @@ namespace RedundantFileSearch
                     bool a = stack.Pop();
                     stack.Push(a || b);
                 }
-                else if (token == "!!")
-                {
-                    if (stack.Count < 1) return false;
-                    bool a = stack.Pop();
-                    stack.Push(!a);
-                }
                 else
                 {
+                    // キーワード（通常または!付き）
                     stack.Push(Match(token));
                 }
             }
