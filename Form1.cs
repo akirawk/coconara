@@ -12,6 +12,9 @@ using NPOI.XWPF.Extractor;
 using System.Drawing;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using System.Xml;
+using HtmlAgilityPack;
+using System.Text;
 
 namespace RedundantFileSearch
 {
@@ -366,7 +369,7 @@ namespace RedundantFileSearch
                 return false;
             }
         }
-        void DoSearch()
+        private void DoSearch()
         {
             if (lbxPath.Items.Count == 0)
             {
@@ -380,7 +383,6 @@ namespace RedundantFileSearch
                                 "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 return;
             }
-            // 検索開始時に書き込み権限を再チェック
             if (!IsDirectoryWritable(txtOutputPath.Text))
             {
                 MessageBox.Show("出力フォルダに書き込み権限がありません。別のフォルダを指定してください。",
@@ -391,7 +393,7 @@ namespace RedundantFileSearch
             }
             if (chxNameCsv.Checked)
             {
-                if (File.Exists(txtName.Text) == false)
+                if (!File.Exists(txtName.Text))
                 {
                     MessageBox.Show("CSV ファイルが存在しません。",
                                     "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -416,7 +418,7 @@ namespace RedundantFileSearch
             var updateTime = DateTime.Now;
             var UPDATE_SPAN = new TimeSpan(TimeSpan.TicksPerSecond);
 
-            /// 検索ファイルリスト生成
+            // 検索ファイルリスト生成
             var searchFiles = new List<string>();
             try
             {
@@ -425,7 +427,6 @@ namespace RedundantFileSearch
                 var r = CreateRegexExtension();
                 var reg = new Regex(r);
 
-                /// ファイル更新日チェック
                 foreach (string path in lbxPath.Items)
                 {
                     var files = new List<string>();
@@ -438,8 +439,7 @@ namespace RedundantFileSearch
                             updateTime = DateTime.Now;
                         }
 
-                        if (reg.IsMatch(item) == false) return false;
-
+                        if (!reg.IsMatch(item)) return false;
                         try
                         {
                             var t = File.GetLastWriteTime(item).Date;
@@ -478,14 +478,14 @@ namespace RedundantFileSearch
 
             updateRemainTime(searchFiles.Count);
 
-            /// 検索キーワード取得
+            // 検索キーワード取得
             var keyList = new List<string[]>();
             try
             {
                 if (chxNameCsv.Checked)
                 {
                     keyList.Clear();
-                    if (Path.GetExtension(txtName.Text) != ".csv")
+                    if (Path.GetExtension(txtName.Text).ToLower() != ".csv")
                     {
                         MessageBox.Show("CSV ファイルを選択してください。",
                                         "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
@@ -498,7 +498,6 @@ namespace RedundantFileSearch
                         {
                             l = sr.ReadLine();
                             if (string.IsNullOrEmpty(l)) continue;
-                            // ログ追加：入力、トークン、RPN を表示
                             var tokens = ParseInput.Tokenize(l);
                             var rpn = ParseInput.ToRPN(l);
                             Console.WriteLine($"CSV Input: {l}");
@@ -510,7 +509,6 @@ namespace RedundantFileSearch
                 }
                 else
                 {
-                    // ログ追加：入力、トークン、RPN を表示
                     var tokens = ParseInput.Tokenize(txtName.Text);
                     var rpn = ParseInput.ToRPN(txtName.Text);
                     Console.WriteLine($"Input: {txtName.Text}");
@@ -541,7 +539,6 @@ namespace RedundantFileSearch
             var tmpFilePath = Path.GetTempPath() + TMP_FILE_NAME;
             foreach (var keyString in keyword)
             {
-                // 検索結果初期化
                 searchStack.Clear();
                 tmpResultFiles = new Dictionary<string, int>();
 
@@ -552,26 +549,69 @@ namespace RedundantFileSearch
 
                     try
                     {
-                        // ファイル中身を読む
-                        string[] content = File.Exists(file) ? File.ReadAllLines(file) : Array.Empty<string>();
-                        // 評価する
+                        string[] content = Array.Empty<string>();
+                        string fileExtension = Path.GetExtension(file).ToLowerInvariant();
+
+                        if (fileExtension == ".rtf")
+                        {
+                            using (RichTextBox rtb = new RichTextBox())
+                            {
+                                rtb.LoadFile(file);
+                                content = rtb.Text.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                Console.WriteLine($"RTF content extracted: {string.Join(" ", content.Take(50))}"); // ログ
+                            }
+                        }
+                        else if (fileExtension == ".html")
+                        {
+                            var doc = new HtmlDocument();
+                            try
+                            {
+                                // Shift-JISを試み、失敗したらUTF-8
+                                using (var stream = File.OpenRead(file))
+                                {
+                                    var encoding = System.Text.Encoding.GetEncoding("Shift-JIS");
+                                    try
+                                    {
+                                        doc.Load(stream, encoding);
+                                    }
+                                    catch
+                                    {
+                                        stream.Seek(0, SeekOrigin.Begin);
+                                        doc.Load(stream, System.Text.Encoding.UTF8);
+                                    }
+                                }
+                                // スクリプト、スタイル、コメントを除去
+                                doc.DocumentNode.Descendants()
+                                    .Where(n => n.Name == "script" || n.Name == "style" || n.NodeType == HtmlNodeType.Comment)
+                                    .ToList()
+                                    .ForEach(n => n.Remove());
+                                string innerText = doc.DocumentNode.InnerText?.Trim();
+                                content = string.IsNullOrWhiteSpace(innerText)
+                                    ? Array.Empty<string>()
+                                    : innerText.Split(new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries);
+                                Console.WriteLine($"HTML content extracted: {string.Join(" ", content.Take(50))}"); // ログ
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine($"HTML parse error for {file}: {ex.Message}");
+                                WriteErrorLog($"HTML parse error for {file}: {ex.Message}", ex.StackTrace);
+                                content = Array.Empty<string>();
+                            }
+                        }
+                        else
+                        {
+                            content = File.Exists(file) ? File.ReadAllLines(file, System.Text.Encoding.UTF8) : Array.Empty<string>();
+                            Console.WriteLine($"Text content extracted: {string.Join(" ", content.Take(50))}"); // ログ
+                        }
+
+                        Console.WriteLine($"Evaluating RPN for {file}");
                         isHit = ParseInput.EvaluateRpnForFile(file, content, new List<string>(keyString));
+                        Console.WriteLine($"Hit result for {file}: {isHit}");
                     }
                     catch (IOException ex)
                     {
                         Console.WriteLine($"File read error for {file}: {ex.Message}");
                         WriteErrorLog($"File read error for {file}: {ex.Message}", ex.StackTrace);
-                        // ポップアップ通知
-                        DialogResult result = MessageBox.Show($"ファイル '{file}' が他のアプリで開かれています。閉じて再試行しますか？",
-                                                             "ファイルアクセスエラー",
-                                                             MessageBoxButtons.RetryCancel,
-                                                             MessageBoxIcon.Warning);
-                        if (result == DialogResult.Cancel)
-                        {
-                            isSearch = false;
-                            BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
-                            return;
-                        }
                         isHit = false;
                     }
                     catch (Exception ex)
@@ -583,6 +623,7 @@ namespace RedundantFileSearch
 
                     if (isHit)
                     {
+                        Console.WriteLine($"Adding {file} to results");
                         tmpResultFiles[file] = 1;
                     }
                 }
