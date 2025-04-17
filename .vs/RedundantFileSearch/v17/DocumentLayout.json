@@ -3,12 +3,15 @@
   "WorkspaceRootPath": "D:\\GitRepos\\coconara\\",
   "Documents": [
     {
-      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|D:\\GitRepos\\coconara\\parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
-      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
-    },
-    {
       "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\gitrepos\\coconara\\form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:form1.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{00000000-0000-0000-0000-000000000000}|\u003CSolution\u003E|RedundantFileSearch||{04B8AB82-A572-4FEF-95CE-5222444B6B64}|"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|D:\\GitRepos\\coconara\\parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:parseinput.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
     },
     {
       "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|D:\\GitRepos\\coconara\\packages.config||{FA3CD31E-987B-443A-9B81-186104E8DAC1}",
@@ -28,6 +31,10 @@
     {
       "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|D:\\GitRepos\\coconara\\checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}",
       "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:checkvalidsoftware.cs||{A6C744A8-0E4A-4FC6-886A-064283054674}"
+    },
+    {
+      "AbsoluteMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|d:\\gitrepos\\coconara\\properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}",
+      "RelativeMoniker": "D:0:0:{41279242-78F4-4DF6-B5CD-6982DC452590}|RedundantFileSearch.csproj|solutionrelative:properties\\settings.settings||{6D2695F9-5365-4A78-89ED-F205C045BFE6}"
     }
   ],
   "DocumentGroupContainers": [
@@ -37,7 +44,7 @@
       "DocumentGroups": [
         {
           "DockedWidth": 200,
-          "SelectedChildIndex": 4,
+          "SelectedChildIndex": 8,
           "Children": [
             {
               "$type": "Bookmark",
@@ -53,32 +60,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 3,
-              "Title": "Form1.Designer.cs",
-              "DocumentMoniker": "D:\\GitRepos\\coconara\\Form1.Designer.cs",
-              "RelativeDocumentMoniker": "Form1.Designer.cs",
-              "ToolTip": "D:\\GitRepos\\coconara\\Form1.Designer.cs",
-              "RelativeToolTip": "Form1.Designer.cs",
-              "ViewState": "AgIAAIEAAAAAAAAAAAAQwJEAAABFAAAAAAAAAA==",
-              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
-              "WhenOpened": "2025-04-16T04:25:23.558Z"
+              "DocumentIndex": 1,
+              "Title": "RedundantFileSearch",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\RedundantFileSearch.csproj",
+              "RelativeDocumentMoniker": "RedundantFileSearch.csproj",
+              "ToolTip": "D:\\GitRepos\\coconara\\RedundantFileSearch.csproj",
+              "RelativeToolTip": "RedundantFileSearch.csproj",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.001001|",
+              "WhenOpened": "2025-04-17T15:54:01.423Z",
+              "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 0,
+              "DocumentIndex": 2,
               "Title": "ParseInput.cs",
               "DocumentMoniker": "D:\\GitRepos\\coconara\\ParseInput.cs",
               "RelativeDocumentMoniker": "ParseInput.cs",
               "ToolTip": "D:\\GitRepos\\coconara\\ParseInput.cs",
               "RelativeToolTip": "ParseInput.cs",
-              "ViewState": "AgIAAFQAAAAAAAAAAAAmwGsAAAAJAAAAAAAAAA==",
+              "ViewState": "AgIAABYAAAAAAAAAAAA3wF8AAAAVAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-04-15T16:21:38.442Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 5,
+              "DocumentIndex": 6,
               "Title": "Component.cs",
               "DocumentMoniker": "C:\\Users\\ku_ak\\AppData\\Local\\Temp\\.vsdbgsrc\\59bfff880852701cf75231f3d8410c10dbbca857e2af8bb46abef848d2805aae\\Component.cs",
               "ToolTip": "C:\\Users\\ku_ak\\AppData\\Local\\Temp\\.vsdbgsrc\\59bfff880852701cf75231f3d8410c10dbbca857e2af8bb46abef848d2805aae\\Component.cs [\u8AAD\u307F\u53D6\u308A\u5C02\u7528]",
@@ -89,7 +96,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 4,
+              "DocumentIndex": 5,
               "Title": "Program.cs",
               "DocumentMoniker": "D:\\GitRepos\\coconara\\Program.cs",
               "RelativeDocumentMoniker": "Program.cs",
@@ -101,7 +108,7 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 6,
+              "DocumentIndex": 7,
               "Title": "CheckValidSoftware.cs",
               "DocumentMoniker": "D:\\GitRepos\\coconara\\CheckValidSoftware.cs",
               "RelativeDocumentMoniker": "CheckValidSoftware.cs",
@@ -113,20 +120,32 @@
             },
             {
               "$type": "Document",
-              "DocumentIndex": 1,
+              "DocumentIndex": 0,
               "Title": "Form1.cs",
               "DocumentMoniker": "D:\\GitRepos\\coconara\\Form1.cs",
               "RelativeDocumentMoniker": "Form1.cs",
               "ToolTip": "D:\\GitRepos\\coconara\\Form1.cs",
               "RelativeToolTip": "Form1.cs",
-              "ViewState": "AgIAAKoBAAAAAAAAAAAmwLYBAAA5AAAAAAAAAA==",
+              "ViewState": "AgIAAPgCAAAAAAAAAAAowPgCAAAAAAAAAAAAAA==",
               "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
               "WhenOpened": "2025-03-26T13:43:02.233Z",
               "EditorCaption": ""
             },
             {
               "$type": "Document",
-              "DocumentIndex": 2,
+              "DocumentIndex": 4,
+              "Title": "Form1.Designer.cs",
+              "DocumentMoniker": "D:\\GitRepos\\coconara\\Form1.Designer.cs",
+              "RelativeDocumentMoniker": "Form1.Designer.cs",
+              "ToolTip": "D:\\GitRepos\\coconara\\Form1.Designer.cs",
+              "RelativeToolTip": "Form1.Designer.cs",
+              "ViewState": "AgIAAIEAAAAAAAAAAAAQwJEAAABFAAAAAAAAAA==",
+              "Icon": "ae27a6b0-e345-4288-96df-5eaf394ee369.000738|",
+              "WhenOpened": "2025-04-16T04:25:23.558Z"
+            },
+            {
+              "$type": "Document",
+              "DocumentIndex": 3,
               "Title": "packages.config",
               "DocumentMoniker": "D:\\GitRepos\\coconara\\packages.config",
               "RelativeDocumentMoniker": "packages.config",

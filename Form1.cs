@@ -424,23 +424,23 @@ namespace RedundantFileSearch
             {
                 new string[] { txtName.Text }
             };
-                if (chxNameCsv.Checked)
-                {
-                    keyList.Clear();
+            if (chxNameCsv.Checked)
+            {
+                keyList.Clear();
 
-                if (Path.GetExtension(txtName.Text) != ".csv") return;
-                    string l;
-                    using (var sr = new StreamReader(txtName.Text))
+            if (Path.GetExtension(txtName.Text) != ".csv") return;
+                string l;
+                using (var sr = new StreamReader(txtName.Text))
+                {
+                while(sr.EndOfStream == false)
                     {
-                    while(sr.EndOfStream == false)
-                        {
-                            l = sr.ReadLine();
-                        if (l == null) continue;
-                        keyList.Add(ParseInput.SplitWords(l));
-                        }
+                        l = sr.ReadLine();
+                    if (l == null) continue;
+                    keyList.Add(ParseInput.SplitWords(l));
                     }
                 }
-                keyword = keyList.ToArray();
+            }
+            keyword = keyList.ToArray();
             if (keyword == null || keyword.Length == 0) return;
 
 
@@ -463,9 +463,9 @@ namespace RedundantFileSearch
                     {
                         // 中断のため、ループを抜ける
                         if (isSearch == false)
-                    {
-                            if (cbxSaveTmp.Checked == false)
                         {
+                            if (cbxSaveTmp.Checked == false)
+                            {
                                 tmpOutputFile.Close();
                                 File.Delete(tmpFilePath);
                             }
@@ -508,14 +508,14 @@ namespace RedundantFileSearch
                     }
 
                         if (cbxSaveTmp.Checked == true)
-                    {
+                        {
                             // 中間ファイル出力
                             OutputTmpFile(tmpResultFiles, i, tmpOutputFile);
-                    }
+                        }
 
                         // 残り時間表示更新
                         if (DateTime.Now - updateTime > UPDATE_SPAN)
-                    {
+                        {
                             updateRemainTime(searchFiles.Count - i);
                             updateTime = DateTime.Now;
                         }
@@ -758,7 +758,6 @@ namespace RedundantFileSearch
                             case "txt":
                         case "htm":
                         case "html":
-                        case "rtf":
                             return SearchText(filePath, keyword);
 
 
@@ -774,6 +773,8 @@ namespace RedundantFileSearch
                         case "pptx":
                             case "ppt":
                             return SearchWordPpt(filePath, keyword);
+                        case "rtf":
+                            return SearchRtf(filePath, keyword);
 
                         default:
                             throw new NotImplementedException();
@@ -932,6 +933,34 @@ namespace RedundantFileSearch
             {
                 return findRowNum[0];
             }
+            return int.MaxValue;
+        }
+
+        private int SearchRtf(string filePath, string searchText)
+        {
+            var findRowNum = new List<int>();
+            int lineCount = 1;
+
+            using (var rtb = new RichTextBox())
+            {
+                rtb.LoadFile(filePath, RichTextBoxStreamType.RichText);
+                var allText = rtb.Text;
+                using (var reader = new StringReader(allText))
+                {
+                    string line;
+                    while ((line = reader.ReadLine()) != null)
+                    {
+                        if (line.IndexOf(searchText, System.StringComparison.OrdinalIgnoreCase) >= 0)
+                        {
+                            findRowNum.Add(lineCount);
+                        }
+                        lineCount++;
+                    }
+                }
+            }
+
+            if (findRowNum.Count == 0) return -1;
+            if (findRowNum.Count == 1) return findRowNum[0];
             return int.MaxValue;
         }
 
