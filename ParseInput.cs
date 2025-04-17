@@ -1,126 +1,184 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace RedundantFileSearch
 {
-    public static class ParseInput
+    internal class ParseInput
     {
-        // トークン化（スペース無視、&&, ||, !!, 括弧対応）
-        public static List<string> Tokenize(string expr)
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns>"で囲まれていればtrue, 要素</returns>
+        private Tuple<bool, string> GetWord(string src)
         {
-            var tokens = new List<string>();
-            // !が付いたキーワードを1つのトークンとして認識
-            var matches = Regex.Matches(expr, @"(!\w+)|(\w+)|(&&|\|\|)");
-            foreach (Match m in matches)
-            {
-                tokens.Add(m.Value);
-            }
-            return tokens;
-        }
-        // RPN 変換（左から順評価、括弧・否定対応）
-        public static List<string> ToRPN(string expr)
-        {
-            List<string> tokens = Tokenize(expr);
-            Stack<string> opStack = new Stack<string>();
-            List<string> rpn = new List<string>();
-            bool expectOperand = true; // 演算子/括弧の後にオペランドを期待
+            var find = src.IndexOf("\"");
+            var s = src.Substring(0, find);
+            if (!string.IsNullOrWhiteSpace(s)) return new Tuple<bool, string>(false, s);
 
-            foreach (var token in tokens)
+            src = src.Substring(find + 1);
+            return new Tuple<bool, string>(true, src.Substring(0, src.IndexOf("\"")));
+        }
+
+        enum EParseState
             {
-                if (token == "&&" || token == "||")
+            NORMAL,
+            ENCLOSE_DOUBLEQUATE
+            }
+
+        /// <summary>
+        /// 
+        /// </summary>
+        /// <returns></returns>
+        public static string[] SplitWords(string src)
+            {
+            if (src == null) return null;
+            var ret = new List<string>();
+            string buf = "";
+            Stack<EParseState> state = new Stack<EParseState>();
+            state.Push(EParseState.NORMAL);
+            for (int i = 0; i<src.Length; i++)
                 {
-                    // 演算子はスタックに積む
-                    while (opStack.Count > 0 && opStack.Peek() != "(")
+                switch (src[i])
                     {
-                        rpn.Add(opStack.Pop());
-                    }
-                    opStack.Push(token);
-                    expectOperand = true;
+                    case ' ':
+                        switch (state.Peek())
+                {
+                            case EParseState.ENCLOSE_DOUBLEQUATE:
+                                buf += src[i];
+                                break;
+
+                            default:
+                                // 何もしない
+                                break;
                 }
-                else if (token == "(")
+                        break;
+
+                    case ',':
+                    case '+':
+                    case '(':
+                    case ')':
                 {
-                    opStack.Push(token);
-                    expectOperand = true;
-                }
-                else if (token == ")")
-                {
-                    while (opStack.Count > 0 && opStack.Peek() != "(")
+                            switch (state.Peek())
                     {
-                        rpn.Add(opStack.Pop());
+                                case EParseState.ENCLOSE_DOUBLEQUATE:
+                                    buf += src[i];
+                                    break;
+
+                                default:
+                                    if (string.IsNullOrWhiteSpace(buf) == false) ret.Add(buf);
+                                    buf = "";
+                                    ret.Add(buf + src[i]);
+                                    buf = "";
+                                    break;
                     }
-                    if (opStack.Count > 0 && opStack.Peek() == "(")
-                    {
-                        opStack.Pop(); // 括弧を削除
                     }
-                    expectOperand = false;
-                }
-                else
+                        break;
+
+                    case '\"':
+                        if (string.IsNullOrWhiteSpace(buf) == false) ret.Add(buf);
+                        buf = "";
+                        switch (state.Peek())
                 {
-                    // キーワード（通常または!付き）
-                    rpn.Add(token);
-                    if (!expectOperand && rpn.Count > 1)
-                    {
-                        // キーワードが連続 → 暗黙の AND
-                        while (opStack.Count > 0 && opStack.Peek() != "(")
-                        {
-                            rpn.Add(opStack.Pop());
+                            case EParseState.ENCLOSE_DOUBLEQUATE:
+                                state.Pop();
+                                break;
+
+                            default:
+                                state.Push(EParseState.ENCLOSE_DOUBLEQUATE);
+                                break;
                         }
-                        opStack.Push("&&");
+                    break;
+
+                    default:
+                        buf += src[i];
+                        break;
                     }
-                    expectOperand = false;
                 }
+            if (string.IsNullOrWhiteSpace(buf) == false) ret.Add(buf);
+            return ret.ToArray();
             }
 
-            // 残りの演算子をポップ
-            while (opStack.Count > 0)
+
+        public static void OrderWords(string[] words, ref Queue<string> ret)
             {
-                string op = opStack.Pop();
-                if (op != "(") rpn.Add(op);
-            }
+            if (words.Length == 0) return;
 
-            return rpn;
-        }
-        // ファイル評価
-        public static bool EvaluateRpnForFile(string filePath, string[] fileContentLines, List<string> rpn)
+            var parse = new Func<string[], int, int, Queue<string>, Queue<string>>((w, startPos, endPos, r) =>
         {
-            bool Match(string keyword)
+                if (startPos == 1) r.Enqueue(w[0]);
+                OrderWords(w.Skip(startPos + 1).Take(endPos - startPos - 1).ToArray(), ref r);
+
+                // 前方パース
+                if (startPos >= 2)
             {
-                bool isExclude = keyword.StartsWith("!");
-                if (isExclude) keyword = keyword.Substring(1);
-                string fileName = Path.GetFileName(filePath);
-                bool matched = fileName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
-                               fileContentLines.Any(line => line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
-                return isExclude ? !matched : matched;
+                    r.Enqueue(w[startPos - 1]);
+                    OrderWords(w.Take(startPos - 1).ToArray(), ref r);
+            }
+                // 後方パース
+                OrderWords(w.Skip(endPos + 1).ToArray(), ref r);
+                return r;
+            });
+
+            var p = Array.FindIndex(words, x => x == "(");
+            if (p == -1)
+            {
+                foreach (var item in words)
+                {
+                    ret.Enqueue(item);
+                }
+                return;
             }
 
-            Stack<bool> stack = new Stack<bool>();
-            foreach (var token in rpn)
-            {
-                if (token == "&&")
+
+            var np = Array.FindIndex(words, p + 1, x => x == "(");
+            var cp = Array.FindIndex(words, p + 1, x => x == ")");
+            if (np == -1 || cp < np)
                 {
-                    if (stack.Count < 2) return false;
-                    bool b = stack.Pop();
-                    bool a = stack.Pop();
-                    stack.Push(a && b);
-                }
-                else if (token == "||")
-                {
-                    if (stack.Count < 2) return false;
-                    bool b = stack.Pop();
-                    bool a = stack.Pop();
-                    stack.Push(a || b);
+                ret = parse(words, p, cp, ret);
                 }
                 else
                 {
-                    // キーワード（通常または!付き）
-                    stack.Push(Match(token));
+                var c = words.Count(x => x == "(");
+                for (var i = 0; i < c - 2; i++)
+                {
+                    p = Array.FindIndex(words, p + 1, x => x == "(");
+                }
+                var ccp = Array.FindIndex(words, cp + 1, x => x == ")");
+                ret = parse(words, p, ccp, ret);
                 }
             }
 
-            return stack.Count == 1 && stack.Pop();
+
+        public static void TestFunc()
+        {
+            Action<string[], string[]> check = (r, a) =>
+            {
+                for (int i = 0; i < a.Length; i++)
+                {
+                    if (r[i] != a[i]) throw new Exception("コード誤り");
+                }
+            };
+
+            var ret = SplitWords("1 + (2 + 3) + 4,\"(56+,)\"");
+            var ans = new string[] { "1", "+" , "(", "2", "+", "3", ")", "+", "4", ",", "(56+,)" };
+            ret = SplitWords("(1+2) + (3,4)+5");
+            ans = new string[] { "(", "1", "+", "2", ")", "+", "(", "3", ",", "4", ")", "+", "5" };
+            check(ret, ans);
+
+            ret = SplitWords("((1+2)+3),4+5");
+            ans = new string[] { "(", "(", "1", "+", "2", ")", "+", "3", ")", ",", "4", "+", "5" };
+            check(ret, ans);
+
+            ret = SplitWords("4,((1+2)+3)+5");
+            ans = new string[] { "4", ",", "(", "(", "1", "+", "2", ")", "+", "3", ")", "+", "5" };
+            check(ret, ans);
+
+            ret = SplitWords("(4,((1+2)+3))+5");
+            ans = new string[] {"(", "4", ",", "(", "(", "1", "+", "2", ")", "+", "3", ")", ")", "+", "5" };
+            check(ret, ans);
+
+            Console.WriteLine("Success");
         }
     }
 }

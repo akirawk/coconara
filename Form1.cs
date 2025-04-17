@@ -368,44 +368,15 @@ namespace RedundantFileSearch
         }
         void DoSearch()
         {
-            if (lbxPath.Items.Count == 0)
-            {
-                MessageBox.Show("検索フォルダを指定してください。",
-                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            if (string.IsNullOrEmpty(txtOutputPath.Text))
-            {
-                MessageBox.Show("出力フォルダを指定してください。",
-                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                return;
-            }
-            // 検索開始時に書き込み権限を再チェック
-            if (!IsDirectoryWritable(txtOutputPath.Text))
-            {
-                MessageBox.Show("出力フォルダに書き込み権限がありません。別のフォルダを指定してください。",
-                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                isSearch = false;
-                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
-                return;
-            }
+            if (lbxPath.Items.Count == 0) return;
+            if (string.IsNullOrEmpty(txtOutputPath.Text)) return;
             if (chxNameCsv.Checked)
             {
-                if (File.Exists(txtName.Text) == false)
-                {
-                    MessageBox.Show("CSV ファイルが存在しません。",
-                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                if (File.Exists(txtName.Text) == false) return;
             }
             else
             {
-                if (string.IsNullOrEmpty(txtName.Text))
-                {
-                    MessageBox.Show("検索キーワードを入力してください。",
-                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
+                if (string.IsNullOrEmpty(txtName.Text)) return;
             }
             BeginInvoke(new Action(() =>
             {
@@ -418,7 +389,6 @@ namespace RedundantFileSearch
 
             /// 検索ファイルリスト生成
             var searchFiles = new List<string>();
-            try
             {
                 var minDate = dtpMin.Value.Date;
                 var maxDate = dtpMax.Value.Date;
@@ -439,199 +409,133 @@ namespace RedundantFileSearch
                         }
 
                         if (reg.IsMatch(item) == false) return false;
-
-                        try
-                        {
                             var t = File.GetLastWriteTime(item).Date;
                             return t >= minDate && t <= maxDate;
-                        }
-                        catch (IOException ex)
-                        {
-                            Console.WriteLine($"File access error for {item}: {ex.Message}");
-                            WriteErrorLog($"File access error for {item}: {ex.Message}", ex.StackTrace);
-                            return false;
-                        }
                     });
-                    try
-                    {
                         AddFiles(path, files);
-                    }
-                    catch (IOException ex)
-                    {
-                        Console.WriteLine($"AddFiles error for {path}: {ex.Message}");
-                        WriteErrorLog($"AddFiles error for {path}: {ex.Message}", ex.StackTrace);
-                        continue;
-                    }
                     searchFiles.AddRange(files.Where(updateCheckFunc));
                 }
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"Search files generation error: {ex.Message}");
-                WriteErrorLog($"Search files generation error: {ex.Message}", ex.StackTrace);
-                MessageBox.Show("検索ファイルの生成中にエラーが発生しました。",
-                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                isSearch = false;
-                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
-                return;
             }
 
             updateRemainTime(searchFiles.Count);
 
             /// 検索キーワード取得
-            var keyList = new List<string[]>();
-            try
+            var keyList = new List<string[]>
             {
+                new string[] { txtName.Text }
+            };
                 if (chxNameCsv.Checked)
                 {
                     keyList.Clear();
-                    if (Path.GetExtension(txtName.Text) != ".csv")
-                    {
-                        MessageBox.Show("CSV ファイルを選択してください。",
-                                        "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                        return;
-                    }
+
+                if (Path.GetExtension(txtName.Text) != ".csv") return;
                     string l;
                     using (var sr = new StreamReader(txtName.Text))
                     {
-                        while (!sr.EndOfStream)
+                    while(sr.EndOfStream == false)
                         {
                             l = sr.ReadLine();
-                            if (string.IsNullOrEmpty(l)) continue;
-                            // ログ追加：入力、トークン、RPN を表示
-                            var tokens = ParseInput.Tokenize(l);
-                            var rpn = ParseInput.ToRPN(l);
-                            Console.WriteLine($"CSV Input: {l}");
-                            Console.WriteLine($"Tokens: {string.Join(", ", tokens)}");
-                            Console.WriteLine($"RPN: {string.Join(", ", rpn)}");
-                            keyList.Add(rpn.ToArray());
+                        if (l == null) continue;
+                        keyList.Add(ParseInput.SplitWords(l));
                         }
                     }
                 }
-                else
-                {
-                    // ログ追加：入力、トークン、RPN を表示
-                    var tokens = ParseInput.Tokenize(txtName.Text);
-                    var rpn = ParseInput.ToRPN(txtName.Text);
-                    Console.WriteLine($"Input: {txtName.Text}");
-                    Console.WriteLine($"Tokens: {string.Join(", ", tokens)}");
-                    Console.WriteLine($"RPN: {string.Join(", ", rpn)}");
-                    keyList.Add(rpn.ToArray());
-                }
                 keyword = keyList.ToArray();
-                if (keyword == null || keyword.Length == 0)
-                {
-                    MessageBox.Show("有効な検索キーワードがありません。",
-                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    return;
-                }
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"Keyword processing error: {ex.Message}");
-                WriteErrorLog($"Keyword processing error: {ex.Message}", ex.StackTrace);
-                MessageBox.Show("キーワードの処理中にエラーが発生しました。",
-                                "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                isSearch = false;
-                BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
-                return;
-            }
+            if (keyword == null || keyword.Length == 0) return;
+
 
             string outputPath = null;
             var tmpFilePath = Path.GetTempPath() + TMP_FILE_NAME;
             foreach (var keyString in keyword)
             {
-                // 検索結果初期化
+                //// 結果バッファ初期化
                 searchStack.Clear();
                 tmpResultFiles = new Dictionary<string, int>();
 
                 foreach (var file in searchFiles)
                 {
-                    Console.WriteLine($"Processing file: {file}");
-                    bool isHit = false;
+                    tmpResultFiles.Add(file, -1);
+                }
 
-                    try
+                using (var tmpOutputFile = new StreamWriter(tmpFilePath))
+                {
+                    for (int i = searchPos; i < searchFiles.Count; i++)
                     {
-                        // ファイル中身を読む
-                        string[] content = File.Exists(file) ? File.ReadAllLines(file) : Array.Empty<string>();
-                        // 評価する
-                        isHit = ParseInput.EvaluateRpnForFile(file, content, new List<string>(keyString));
-                    }
-                    catch (IOException ex)
+                        // 中断のため、ループを抜ける
+                        if (isSearch == false)
                     {
-                        Console.WriteLine($"File read error for {file}: {ex.Message}");
-                        WriteErrorLog($"File read error for {file}: {ex.Message}", ex.StackTrace);
-                        // ポップアップ通知
-                        DialogResult result = MessageBox.Show($"ファイル '{file}' が他のアプリで開かれています。閉じて再試行しますか？",
-                                                             "ファイルアクセスエラー",
-                                                             MessageBoxButtons.RetryCancel,
-                                                             MessageBoxIcon.Warning);
-                        if (result == DialogResult.Cancel)
+                            if (cbxSaveTmp.Checked == false)
                         {
-                            isSearch = false;
-                            BeginInvoke(new Action(() => { btnSearch.Text = "検索開始"; }));
+                                tmpOutputFile.Close();
+                                File.Delete(tmpFilePath);
+                            }
                             return;
                         }
-                        isHit = false;
-                    }
-                    catch (Exception ex)
-                    {
-                        Console.WriteLine($"Search error for {file}: {ex.Message}");
-                        WriteErrorLog($"Search error for {file}: {ex.Message}", ex.StackTrace);
-                        isHit = false;
+
+                        bool isAnd = false;
+                        foreach (var item in keyString)
+                        {
+                            switch (item)
+                            {
+                                case ")":
+                                    if (searchStack.Count != 0)
+                                    {
+                                        var p = searchStack.Pop();
+                                        if (p != null)
+                                        {
+                                            tmpResultFiles = AndOr(p.Item1, p.Item2, tmpResultFiles);
+                                        }
+                                    }
+                                    searchStack.Push(new Tuple<Dictionary<string, int>, bool>(tmpResultFiles, isAnd));
+                                    continue;
+
+                                case "+":
+                                    isAnd = true;
+                                    continue;
+
+                                case "(":
+                                case ",":
+                                    continue;
+
+                                default:
+                                    {
+                                        var r = SearchList(tmpResultFiles.ElementAt(i), isAnd, item);
+                                        tmpResultFiles[r.Key] = r.Value;
+                                        isAnd = false;
+                                    }
+                                    break;
+                            }
                     }
 
-                    if (isHit)
+                        if (cbxSaveTmp.Checked == true)
                     {
-                        tmpResultFiles[file] = 1;
+                            // 中間ファイル出力
+                            OutputTmpFile(tmpResultFiles, i, tmpOutputFile);
+                    }
+
+                        // 残り時間表示更新
+                        if (DateTime.Now - updateTime > UPDATE_SPAN)
+                    {
+                            updateRemainTime(searchFiles.Count - i);
+                            updateTime = DateTime.Now;
+                        }
                     }
                 }
 
                 if (reserveForm == null || (reserveForm != null && reserveForm.chkOutCsv.Checked))
                 {
-                    try
-                    {
                         outputPath = OutputCsv(tmpResultFiles);
-                        int hitCount = tmpResultFiles.Count;
-                        MessageBox.Show($"{hitCount} 件の検索結果を保存しました。",
-                            "保存完了", MessageBoxButtons.OK, MessageBoxIcon.Information);
-                    }
-                    catch (IOException ex)
-                    {
-                        Console.WriteLine($"CSV output error: {ex.Message}");
-                        WriteErrorLog($"CSV output error: {ex.Message}", ex.StackTrace);
-                        MessageBox.Show("検索結果の保存中にエラーが発生しました。",
-                                        "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
                 }
             }
 
             if (reserveForm != null && (reserveForm.chkMailInfo.Checked || reserveForm.chkMailCsv.Checked))
             {
-                try
-                {
                     reserveForm.SendMail(Form1.MAIL_SUBJECT_HEADER + "検索完了通知", "全部調べる君での検索が完了しました。", reserveForm.chkMailCsv.Checked ? outputPath : null);
                 }
-                catch (Exception ex)
-                {
-                    Console.WriteLine($"Mail send error: {ex.Message}");
-                    WriteErrorLog($"Mail send error: {ex.Message}", ex.StackTrace);
-                    MessageBox.Show("メール送信中にエラーが発生しました。",
-                                    "エラー", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                }
-            }
 
             searchPos = 0;
             tmpResultFiles.Clear();
-            try
-            {
-                if (File.Exists(tmpFilePath)) File.Delete(tmpFilePath);
-            }
-            catch (IOException ex)
-            {
-                Console.WriteLine($"Temp file delete error: {ex.Message}");
-                WriteErrorLog($"Temp file delete error: {ex.Message}", ex.StackTrace);
-            }
+            File.Delete(tmpFilePath);
             isSearch = false;
             BeginInvoke(new Action(() =>
             {
@@ -782,52 +686,6 @@ namespace RedundantFileSearch
             }
         }
 
-
-        private bool EvaluateRpnForFile(string filePath, string[] fileContentLines, List<string> rpn)
-        {
-            Func<string, bool> isHit = (keyword) =>
-            {
-                bool isExclude = keyword.StartsWith("-");
-                if (isExclude) keyword = keyword.Substring(1);
-
-                string fileName = Path.GetFileName(filePath);
-
-                bool matchFileName = fileName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchContent = fileContentLines.Any(line => line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
-                bool result = matchFileName || matchContent;
-
-                return isExclude ? !result : result;
-            };
-
-            Stack<bool> stack = new Stack<bool>();
-            foreach (var token in rpn)
-            {
-                switch (token)
-                {
-                    case "+":
-                        {
-                            var b = stack.Pop();
-                            var a = stack.Pop();
-                            stack.Push(a && b);
-                            break;
-                        }
-                    case ",":
-                        {
-                            var b = stack.Pop();
-                            var a = stack.Pop();
-                            stack.Push(a || b);
-                            break;
-                        }
-                    default:
-                        stack.Push(isHit(token));
-                        break;
-                }
-            }
-
-            return stack.Count > 0 && stack.Pop();
-        }
-
-
         enum EFileType
         {
             ALL,
@@ -876,96 +734,65 @@ namespace RedundantFileSearch
         /// <exception cref="NotImplementedException"></exception>
         int isHitKeyword(string filePath, string keyword)
         {
-            bool isExclude = keyword.StartsWith("-");
-            if (isExclude) keyword = keyword.Substring(1);
-
-            string ext = Path.GetExtension(filePath).ToLower().TrimStart('.');
-
-            // ファイル名にマッチ？
-            bool matchFileName = Path.GetFileName(filePath).IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
-
-            if (isExclude)
+            if (Path.GetFileName(filePath).IndexOf(keyword) >= 0)
             {
-                if (matchFileName) return -1;  // 除外対象に一致したら即NG
-            }
-            else
-            {
-                if (matchFileName) return -2;  // 通常一致
+                return -2;
             }
 
-            // ファイルの種類に応じて中身検索
-            if (FileTypeDic.ContainsKey(ext))
+            var ext = Path.GetExtension(filePath);
+            if (ext.Length == 0)
             {
+                return -1;
+            }
+
+            ext = ext.Substring(1);
+            if (FileTypeDic.ContainsKey(ext) == false)
+            {
+                return -1;
+            }
                 switch (FileTypeDic[ext])
                 {
                     case EFileType.ALL:
                         switch (ext)
                         {
                             case "txt":
-                            case "csv":
-                                return contentMatchResult(SearchText(filePath, keyword), isExclude);
+                        case "htm":
+                        case "html":
+                        case "rtf":
+                            return SearchText(filePath, keyword);
+
+
+                        case "xlsx":
                             case "xls":
-                            case "xlsx":
-                                return contentMatchResult(SearchExcel(filePath, keyword), isExclude);
+                            return SearchExcel(filePath, keyword);
+
+                        case "pdf":
+                            return SearchPdf(filePath, keyword);
+
+                        case "docx":
                             case "doc":
-                            case "docx":
+                        case "pptx":
                             case "ppt":
-                            case "pptx":
-                                return contentMatchResult(SearchWordPpt(filePath, keyword), isExclude);
-                            case "pdf":
-                                return contentMatchResult(SearchPdf(filePath, keyword), isExclude);
-                            case "html":
-                            case "htm":
-                                return contentMatchResult(SearchHtml(filePath, keyword), isExclude);
-                            case "rtf":
-                                return contentMatchResult(SearchRtf(filePath, keyword), isExclude);
+                            return SearchWordPpt(filePath, keyword);
+
+                        default:
+                            throw new NotImplementedException();
                         }
-                        break;
 
                     case EFileType.EXIF:
-                        return contentMatchResult(SearchExif(filePath, keyword) ? 0 : -1, isExclude);
-                }
-            }
-
-            return -1;}
-
-        int contentMatchResult(int result, bool isExclude)
+                    if (SearchExif(filePath, keyword) == true)
         {
-            if (isExclude)
-            {
-                return result != -1 ? -1 : -2;  // 除外ならマッチしたらNG、しなければ仮ヒット
-            }
-            return result;
+                        return 0;
         }
-        int SearchHtml(string filePath, string keyword)
-        {
-            try
-            {
-                string content = File.ReadAllText(filePath);
-                string textOnly = Regex.Replace(content, "<.*?>", string.Empty);  // HTMLタグ除去
-                return textOnly.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ? 0 : -1;
-            }
-            catch
-            {
+                    break;
+
+                case EFileType.OTHER:
+                    // DO NOTHING.
+                default:
+                    break;
+                }
                 return -1;
             }
-        }
-
-        int SearchRtf(string filePath, string keyword)
-        {
-            try
-            {
-                using (var box = new System.Windows.Forms.RichTextBox())
-                {
-                    box.LoadFile(filePath);
-                    return box.Text.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ? 0 : -1;
-                }
-            }
-            catch
-            {
-                return -1;
-            }
-        }
 
         private int SearchText(string filePath, string keyword)
         {
@@ -1205,31 +1032,18 @@ namespace RedundantFileSearch
             reserveForm.Show(this);
         }
 
-        private void WriteErrorLog(string message, string stackTrace)
-        {
-            try
-            {
-                string logFile = "errorLog.txt"; // ログファイル名（必要ならパス変更）
-                string logEntry = $"{DateTime.Now:yyyy-MM-dd HH:mm:ss} | {message}\n{stackTrace}\n\n";
-                // ファイルがロックされてても再試行
-                for (int i = 0; i < 3; i++)
-                {
-                    try
+        private void WriteErrorLog(string msg, string trace)
                     {
-                        File.AppendAllText(logFile, logEntry);
-                        return;
-                    }
-                    catch (IOException)
+            if (File.Exists(ERROR_LOG))
                     {
-                        System.Threading.Thread.Sleep(100); // 100ms 待機
+                var f = new FileInfo(ERROR_LOG);
+                if (f.Length >= 10 * 1024 * 1024) File.Delete(f.FullName);
                     }
-                }
-                // 失敗したらコンソールに出力
-                Console.WriteLine($"Failed to write to log: {message}");
-            }
-            catch (Exception ex)
+
+            using (var sw = new StreamWriter(ERROR_LOG, true))
             {
-                Console.WriteLine($"Error writing log: {ex.Message}");
+                sw.WriteLine(msg);
+                sw.WriteLine(trace);
             }
         }
     }
