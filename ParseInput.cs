@@ -91,12 +91,8 @@ namespace RedundantFileSearch
                 bool isExclude = keyword.StartsWith("!");
                 if (isExclude) keyword = keyword.Substring(1);
                 string fileName = Path.GetFileName(filePath);
-                bool matchedInName = fileName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0;
-                bool matchedInContent = fileContentLines.Any(line =>
-                    !string.IsNullOrWhiteSpace(line) &&
-                    line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
-                bool matched = matchedInName || matchedInContent;
-                Console.WriteLine($"Match '{keyword}' (exclude={isExclude}) in {fileName}: name={matchedInName}, content={matchedInContent}, result={matched}");
+                bool matched = fileName.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0 ||
+                               fileContentLines.Any(line => line.IndexOf(keyword, StringComparison.OrdinalIgnoreCase) >= 0);
                 return isExclude ? !matched : matched;
             }
 
@@ -119,13 +115,12 @@ namespace RedundantFileSearch
                 }
                 else
                 {
+                    // キーワード（通常または!付き）
                     stack.Push(Match(token));
                 }
             }
 
-            bool result = stack.Count == 1 && stack.Pop();
-            Console.WriteLine($"Final evaluation result for {Path.GetFileName(filePath)}: {result}");
-            return result;
+            return stack.Count == 1 && stack.Pop();
         }
     }
 }
