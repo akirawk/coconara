@@ -656,23 +656,42 @@ namespace RedundantFileSearch
             }
             return ret;
         }
-
-        KeyValuePair<string, int> SearchList(KeyValuePair<string, int> file, bool isAnd, string keyword)
+        KeyValuePair<string, int> SearchList(
+                KeyValuePair<string, int> file,
+                bool isAnd,
+                string keyword)
         {
             try
             {
+                // ① NOT かどうか判定
+                bool isNot = false;
+                if (!string.IsNullOrEmpty(keyword) && keyword[0] == '!')
+                {
+                    isNot = true;
+                    keyword = keyword.Substring(1);   // '!' を外す
+                }
+
+                // ② 通常ヒット判定
                 var ret = isHitKeyword(file.Key, keyword);
 
-                if (isAnd == true)
+                // ③ NOT の場合は真偽を反転
+                //    ヒットなし(-1) → 成功(0) , ヒットあり → 失格(-1)
+                if (isNot)
+                {
+                    ret = (ret == -1) ? 0 : -1;
+                }
+
+                // ④ 既存の AND／OR 合成ロジック
+                if (isAnd)
                 {
                     if (file.Value > 0 && ret != -1)
                     {
-                        ret = int.MaxValue;
+                        ret = int.MaxValue;   // 両方ヒット → AND 成功
                     }
                 }
                 else
                 {
-                    if (ret == -1)
+                    if (ret == -1)           // OR で失敗したら前回結果を残す
                     {
                         ret = file.Value;
                     }
@@ -685,7 +704,6 @@ namespace RedundantFileSearch
                 return new KeyValuePair<string, int>(file.Key, -1);
             }
         }
-
         enum EFileType
         {
             ALL,
