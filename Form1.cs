@@ -750,51 +750,87 @@ namespace RedundantFileSearch
             {
                 return -1;
             }
-                switch (FileTypeDic[ext])
-                {
-                    case EFileType.ALL:
-                        switch (ext)
-                        {
-                            case "txt":
-                        case "htm":
-                        case "html":
-                            return SearchText(filePath, keyword);
+            if (!CheckFileCanOpen(filePath))
+            {
+                // ユーザーが中断（キャンセル）を選んだ → 検索全体を中止
+                return -1;
+            }
+            switch (FileTypeDic[ext])
+            {
+                case EFileType.ALL:
+                    switch (ext)
+                    {
+                        case "txt":
+                    case "htm":
+                    case "html":
+                        return SearchText(filePath, keyword);
 
 
-                        case "xlsx":
-                            case "xls":
-                            return SearchExcel(filePath, keyword);
+                    case "xlsx":
+                        case "xls":
+                        return SearchExcel(filePath, keyword);
 
-                        case "pdf":
-                            return SearchPdf(filePath, keyword);
+                    case "pdf":
+                        return SearchPdf(filePath, keyword);
 
-                        case "docx":
-                            case "doc":
-                        case "pptx":
-                            case "ppt":
-                            return SearchWordPpt(filePath, keyword);
-                        case "rtf":
-                            return SearchRtf(filePath, keyword);
+                    case "docx":
+                        case "doc":
+                    case "pptx":
+                        case "ppt":
+                        return SearchWordPpt(filePath, keyword);
+                    case "rtf":
+                        return SearchRtf(filePath, keyword);
 
-                        default:
-                            throw new NotImplementedException();
-                        }
+                    default:
+                        throw new NotImplementedException();
+                    }
 
-                    case EFileType.EXIF:
+                case EFileType.EXIF:
                     if (SearchExif(filePath, keyword) == true)
-        {
+                    {
                         return 0;
-        }
+                    }
                     break;
 
                 case EFileType.OTHER:
                     // DO NOTHING.
                 default:
                     break;
-                }
-                return -1;
             }
+            return -1;
+        }
+        private bool CheckFileCanOpen(string filePath)
+        {
+            while (true)
+            {
+                try
+                {
+                    using (var fs = new FileStream(filePath, FileMode.Open, FileAccess.Read))
+                    {
+                        // 何も読まない。開けるか確認だけ。
+                    }
+                    return true;
+                }
+                catch (Exception ex)
+                {
+                    var result = MessageBox.Show(
+                        $"ファイル「{filePath}」を開くことができませんでした。\n\n{ex.Message}\n\nリトライしますか？",
+                        "ファイルオープンエラー",
+                        MessageBoxButtons.RetryCancel,
+                        MessageBoxIcon.Warning);
 
+                    if (result == DialogResult.Retry)
+                    {
+                        continue; // 再試行
+                    }
+                    else
+                    {
+                        // スキップとして false を返す
+                        return false;
+                    }
+                }
+            }
+        }
         private int SearchText(string filePath, string keyword)
         {
             var findRowNum = new List<int>();
