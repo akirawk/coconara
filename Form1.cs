@@ -429,16 +429,22 @@ namespace RedundantFileSearch
             if (chxNameCsv.Checked)
             {
                 keyList.Clear();
-
-            if (Path.GetExtension(txtName.Text) != ".csv") return;
+                if (Path.GetExtension(txtName.Text) != ".csv") return;
                 string l;
-                using (var sr = new StreamReader(txtName.Text))
+                // 変更後（Shift_JIS 強制）
+                using (var fs = new FileStream(
+                           txtName.Text,
+                           FileMode.Open,
+                           FileAccess.Read,
+                           FileShare.ReadWrite))         // ★ 共有モードを緩くする
+                using (var sr = new StreamReader(
+                           fs, System.Text.Encoding.GetEncoding("Shift_JIS")))
                 {
-                while(sr.EndOfStream == false)
+                    while (sr.EndOfStream == false)
                     {
                         l = sr.ReadLine();
-                    if (l == null) continue;
-                    keyList.Add(ParseInput.SplitWords(l));
+                        if (l == null) continue;
+                        keyList.Add(ParseInput.SplitWords(l));
                     }
                 }
             }
