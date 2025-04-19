@@ -12,6 +12,8 @@ using NPOI.XWPF.Extractor;
 using System.Drawing;
 using System.Security.Principal;
 using System.Threading.Tasks;
+using NPOI.SS.Formula.Functions;
+using System.Diagnostics;
 
 namespace RedundantFileSearch
 {
@@ -663,6 +665,8 @@ namespace RedundantFileSearch
         {
             try
             {
+                var raw = keyword;   // ログ用に元文字列を保持
+                
                 // ① NOT かどうか判定
                 bool isNot = false;
                 if (!string.IsNullOrEmpty(keyword) && keyword[0] == '!')
@@ -688,6 +692,17 @@ namespace RedundantFileSearch
                     {
                         ret = int.MaxValue;   // 両方ヒット → AND 成功
                     }
+                    // file.Value が失敗していても ret の結果が残ってしまう
+                    // どちらかが失敗なら全体失敗
+                    if (file.Value == -1 || ret == -1)
+                    {
+                        ret = -1;
+                    }
+                    else
+                    {
+                        // どちらもヒット（行番号・-2・0 など -1 以外なら可）
+                        ret = int.MaxValue;
+                    }
                 }
                 else
                 {
@@ -696,6 +711,10 @@ namespace RedundantFileSearch
                         ret = file.Value;
                     }
                 }
+#if DEBUG
+                Debug.WriteLine($"[SearchList] file=\"{Path.GetFileName(file.Key)}\" "
+                +$"keyword=\"{raw}\" isNot={isNot} result={ret}");
+#endif
                 return new KeyValuePair<string, int>(file.Key, ret);
             }
             catch (Exception e)
@@ -703,6 +722,85 @@ namespace RedundantFileSearch
                 WriteErrorLog(e.Message, e.StackTrace);
                 return new KeyValuePair<string, int>(file.Key, -1);
             }
+        }
+        // ----------------- NEW: 演算子テーブル -----------------
+        static readonly Dictionary<string, int> OP_PRIORITY = new Dictionary<string, int>
+        {
+            { "+", 2 },   // AND
+            { ",", 1 }    // OR
+        };
+
+        // ----------------- NEW: トークン列 → RPN -----------------
+        static Queue<string> ToRpn(string[] tokens)
+        {
+            var output = new Queue<string>();
+            var opStack = new Stack<string>();
+
+            foreach (var tk in tokens)
+            {
+                if (tk == "+" || tk == ",")
+                {   // 演算子
+                    while (opStack.Count > 0
+                           && OP_PRIORITY.ContainsKey(opStack.Peek())
+                           && OP_PRIORITY[opStack.Peek()] >= OP_PRIORITY[tk])
+                    {
+                        output.Enqueue(opStack.Pop());
+                    }
+                    opStack.Push(tk);
+                }
+                else if (tk == "(")
+                {
+                    opStack.Push(tk);
+                }
+                else if (tk == ")")
+                {
+                    while (opStack.Peek() != "(")
+                        output.Enqueue(opStack.Pop());
+                    opStack.Pop();            // '(' を捨てる
+                }
+                else
+                {   // オペランド（キーワード）
+                    output.Enqueue(tk);
+                }
+            }
+            while (opStack.Count > 0) output.Enqueue(opStack.Pop());
+            return output;
+        }
+
+        // ----------------- NEW: RPN 評価（１ファイル分） ---------------
+        bool EvalRpn(Queue<string> rpn, string filePath)
+        {
+            var st = new Stack<bool>();
+
+            foreach (var tk in rpn)
+            {
+                switch (tk)
+                {
+                    case "+":
+                        {   // AND
+                            var b = st.Pop();
+                            var a = st.Pop();
+                            st.Push(a && b);
+                            break;
+                        }
+                    case ",":
+                        {   // OR
+                            var b = st.Pop();
+                            var a = st.Pop();
+                            st.Push(a || b);
+                            break;
+                        }
+                    default:
+                        {   // キーワード（! 対応）
+                            bool isNot = tk.StartsWith("!");
+                            var word = isNot ? tk.Substring(1) : tk;
+                            bool hit = (isHitKeyword(filePath, word) != -1);
+                            st.Push(isNot ? !hit : hit);
+                            break;
+                        }
+                }
+            }
+            return st.Pop();   // 最終結果
         }
         enum EFileType
         {

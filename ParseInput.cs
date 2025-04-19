@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 
 namespace RedundantFileSearch
@@ -96,6 +97,14 @@ namespace RedundantFileSearch
                 }
             }
             if (string.IsNullOrWhiteSpace(buf) == false) ret.Add(buf);
+#if DEBUG
+            // ── デバッグ出力 ─────────────────────────────
+            Debug.WriteLine($"[SplitWords]  src = \"{src}\"");
+            for (int i = 0; i < ret.Count; i++)
+            {
+                Debug.WriteLine($"  [{i}] \"{ret[i]}\"");
+            }
+#endif
             return ret.ToArray();
         }
         public static void OrderWords(string[] words, ref Queue<string> ret)
